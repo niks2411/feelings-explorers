@@ -10,14 +10,27 @@ const MoodMirror = () => {
   const [detectedEmojis, setDetectedEmojis] = useState([]);
   const [cameraSupported, setCameraSupported] = useState(false);
   const [cameraStatus, setCameraStatus] = useState('idle'); // 'idle', 'requesting', 'active', 'error'
+  const [currentCamera, setCurrentCamera] = useState('user'); // 'user' (front) or 'environment' (back)
+  const [availableCameras, setAvailableCameras] = useState([]);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraStatusRef = useRef('idle');
 
-  // Check camera support
+  // Check camera support and enumerate devices
   useEffect(() => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       setCameraSupported(true);
+      
+      // Enumerate available cameras
+      navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          const videoDevices = devices.filter(device => device.kind === 'videoinput');
+          setAvailableCameras(videoDevices);
+          console.log('Available cameras:', videoDevices.length);
+        })
+        .catch(err => {
+          console.log('Error enumerating devices:', err);
+        });
     }
   }, []);
   
@@ -77,7 +90,7 @@ const MoodMirror = () => {
       console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: 'user', // Use front camera for better compatibility
+          facingMode: currentCamera, // Use current camera selection
           width: { ideal: 640 },
           height: { ideal: 480 }
         }
@@ -207,6 +220,63 @@ const MoodMirror = () => {
       console.log('Video ref still not available after retry.');
     }
   };
+  
+  // Flip camera function
+  const flipCamera = async () => {
+    if (!isScanning || cameraStatus !== 'active') {
+      console.log('Cannot flip camera - not currently active');
+      return;
+    }
+    
+    console.log('Flipping camera from', currentCamera, 'to', currentCamera === 'user' ? 'environment' : 'user');
+    
+    // Stop current stream
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+    }
+    
+    // Switch camera
+    const newCamera = currentCamera === 'user' ? 'environment' : 'user';
+    setCurrentCamera(newCamera);
+    
+    // Restart with new camera
+    setCameraStatus('requesting');
+    cameraStatusRef.current = 'requesting';
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: newCamera,
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        }
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        
+        setTimeout(() => {
+          setCameraStatus('active');
+          cameraStatusRef.current = 'active';
+          
+          if (videoRef.current) {
+            videoRef.current.play().catch(playError => {
+              console.log('Autoplay failed after flip:', playError);
+            });
+          }
+        }, 200);
+      }
+    } catch (err) {
+      console.error('Error flipping camera:', err);
+      setCameraStatus('error');
+      cameraStatusRef.current = 'error';
+      
+      // Try to restart with original camera
+      setCurrentCamera(currentCamera === 'user' ? 'environment' : 'user');
+      alert('Failed to switch camera. Some devices may not have multiple cameras.');
+    }
+  };
 
   // Simulate text detection (in real app, this would use OCR)
   const simulateTextDetection = () => {
@@ -280,7 +350,10 @@ const MoodMirror = () => {
                   <div className="space-y-4">
                 {cameraStatus === 'active' && (
                   <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    ✅ Camera active and ready!
+                    ✅ Camera active and ready! 
+                    <span className="text-sm">
+                      ({currentCamera === 'user' ? '🤳 Front Camera' : '📷 Back Camera'})
+                    </span>
                   </div>
                 )}
                 
@@ -311,20 +384,31 @@ const MoodMirror = () => {
                   </div>
                 )}
                     
-                    <Button
-                      onClick={stopCamera}
-                      variant="outline"
-                      className="font-fredoka border-2 border-red-500 text-red-500 hover:bg-red-50"
-                    >
-                      ⏹️ Stop Scanner
-                    </Button>
-                    
-                    <Button
-                      onClick={simulateTextDetection}
-                      className="font-fredoka bg-positive hover:bg-positive-light text-white"
-                    >
-                      🔍 Simulate Text Detection
-                    </Button>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button
+                        onClick={stopCamera}
+                        variant="outline"
+                        className="font-fredoka border-2 border-red-500 text-red-500 hover:bg-red-50"
+                      >
+                        ⏹️ Stop Scanner
+                      </Button>
+                      
+                      <Button
+                        onClick={flipCamera}
+                        disabled={cameraStatus !== 'active'}
+                        variant="outline"
+                        className="font-fredoka border-2 border-blue-500 text-blue-500 hover:bg-blue-50 disabled:opacity-50"
+                      >
+                        🔄 Flip Camera
+                      </Button>
+                      
+                      <Button
+                        onClick={simulateTextDetection}
+                        className="font-fredoka bg-positive hover:bg-positive-light text-white"
+                      >
+                        🔍 Simulate Text Detection
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -399,6 +483,10 @@ const MoodMirror = () => {
                   Point camera at text and tap "Simulate Text Detection" to see AR emojis!
                 </p>
                 
+                <p className="font-inter text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                  🔄 Use "Flip Camera" to switch between front and back cameras
+                </p>
+                
                 {cameraStatus === 'active' && (
                   <p className="font-inter text-xs text-green-600 bg-green-100 p-2 rounded">
                     📹 Camera is working! Click on the video if it appears black to start playback.
@@ -420,6 +508,8 @@ const MoodMirror = () => {
                       cameraStatus === 'error' ? 'text-red-600' : 
                       cameraStatus === 'requesting' ? 'text-blue-600' : 'text-gray-600'
                     }`}>{cameraStatus}</span></p>
+                    <p>Current Camera: {currentCamera === 'user' ? '🤳 Front' : '📷 Back'}</p>
+                    <p>Available Cameras: {availableCameras.length}</p>
                     <p>Is Scanning: {isScanning ? '✅ Yes' : '❌ No'}</p>
                     <p>Has Stream: {videoRef.current?.srcObject ? '✅ Yes' : '❌ No'}</p>
                     <p>Video Ready: {videoRef.current?.readyState || 'Unknown'}</p>
