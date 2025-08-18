@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				fredoka: ['Fredoka', 'cursive'],
+				inter: ['Inter', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -26,15 +30,14 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					light: 'hsl(var(--primary-light))',
+					dark: 'hsl(var(--primary-dark))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
-				},
-				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					foreground: 'hsl(var(--secondary-foreground))',
+					light: 'hsl(var(--secondary-light))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -42,7 +45,8 @@ export default {
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					light: 'hsl(var(--accent-light))'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -51,6 +55,21 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				positive: {
+					DEFAULT: 'hsl(var(--positive))',
+					light: 'hsl(var(--positive-light))',
+					bg: 'hsl(var(--positive-bg))'
+				},
+				negative: {
+					DEFAULT: 'hsl(var(--negative))',
+					light: 'hsl(var(--negative-light))',
+					bg: 'hsl(var(--negative-bg))'
+				},
+				neutral: {
+					DEFAULT: 'hsl(var(--neutral))',
+					light: 'hsl(var(--neutral-light))',
+					bg: 'hsl(var(--neutral-bg))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
