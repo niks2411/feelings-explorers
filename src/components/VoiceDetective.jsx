@@ -9,6 +9,8 @@ const VoiceDetective = () => {
   const [sentiment, setSentiment] = useState(null);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [confidence, setConfidence] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [sessionStats, setSessionStats] = useState({ totalWords: 0, positiveCount: 0, negativeCount: 0 });
   const recognitionRef = useRef(null);
 
   // Check speech recognition support
@@ -32,7 +34,11 @@ const VoiceDetective = () => {
         setConfidence(confidenceScore || 0.8);
         
         if (event.results[current].isFinal) {
-          analyzeSpeechSentiment(transcriptText);
+          setIsProcessing(true);
+          setTimeout(() => {
+            analyzeSpeechSentiment(transcriptText);
+            setIsProcessing(false);
+          }, 500); // Add small delay for better UX
         }
       };
       
@@ -166,6 +172,13 @@ const VoiceDetective = () => {
       positiveScore: Math.round(positiveScore * 10) / 10,
       negativeScore: Math.round(negativeScore * 10) / 10
     });
+    
+    // Update session stats
+    setSessionStats(prev => ({
+      totalWords: prev.totalWords + words.length,
+      positiveCount: prev.positiveCount + positiveCount,
+      negativeCount: prev.negativeCount + negativeCount
+    }));
   };
 
   // Start listening
@@ -211,6 +224,12 @@ const VoiceDetective = () => {
     setTranscript('');
     setSentiment(null);
     setConfidence(0);
+    setIsProcessing(false);
+  };
+  
+  // Reset session stats
+  const resetStats = () => {
+    setSessionStats({ totalWords: 0, positiveCount: 0, negativeCount: 0 });
   };
 
   return (
@@ -284,6 +303,12 @@ const VoiceDetective = () => {
                 {isListening && (
                   <div className="text-accent font-fredoka animate-pulse">
                     🎧 Listening... Speak now!
+                  </div>
+                )}
+                
+                {isProcessing && (
+                  <div className="text-blue-600 font-fredoka animate-pulse">
+                    🧠 Processing your speech...
                   </div>
                 )}
               </div>
@@ -369,6 +394,42 @@ const VoiceDetective = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Session Statistics */}
+      {(sessionStats.totalWords > 0) && (
+        <Card className="hover-lift shadow-lg border-2 border-accent/20">
+          <CardHeader className="bg-gradient-to-r from-accent/10 to-secondary/10">
+            <CardTitle className="font-fredoka text-xl text-center">
+              📊 Your Voice Session Stats
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-3xl font-fredoka text-blue-600">{sessionStats.totalWords}</div>
+                <div className="text-sm font-inter">Total Words</div>
+              </div>
+              <div className="bg-positive-bg p-4 rounded-lg">
+                <div className="text-3xl font-fredoka text-positive">{sessionStats.positiveCount}</div>
+                <div className="text-sm font-inter">Happy Words</div>
+              </div>
+              <div className="bg-negative-bg p-4 rounded-lg">
+                <div className="text-3xl font-fredoka text-negative">{sessionStats.negativeCount}</div>
+                <div className="text-sm font-inter">Sad Words</div>
+              </div>
+            </div>
+            <div className="text-center mt-4">
+              <Button
+                onClick={resetStats}
+                variant="outline"
+                className="font-fredoka border-2"
+              >
+                🔄 Reset Stats
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       {/* Voice Challenges */}
       <Card className="hover-lift shadow-lg border-2 border-secondary/20">

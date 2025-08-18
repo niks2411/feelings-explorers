@@ -219,6 +219,10 @@ const Index = () => {
   const [currentSection, setCurrentSection] = useState('playground');
   const [quizAnswers, setQuizAnswers] = useState({});
   const [showQuizResults, setShowQuizResults] = useState(false);
+  const [userScore, setUserScore] = useState(0);
+  const [totalAnalyses, setTotalAnalyses] = useState(0);
+  const [streakCount, setStreakCount] = useState(0);
+  const [lastAnalysisCorrect, setLastAnalysisCorrect] = useState(null);
   
   // Mini-games state
   const [currentGameType, setCurrentGameType] = useState('guess');
@@ -227,10 +231,31 @@ const Index = () => {
   const [showGameResults, setShowGameResults] = useState(false);
   const [draggedEmoji, setDraggedEmoji] = useState(null);
   const [dropResult, setDropResult] = useState(null);
+  const [gameScore, setGameScore] = useState(0);
+  const [gameTimer, setGameTimer] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(null);
+
+  // Game timer effect
+  useEffect(() => {
+    let interval;
+    if (gameStartTime && !showGameResults) {
+      interval = setInterval(() => {
+        setGameTimer(Math.floor((Date.now() - gameStartTime) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [gameStartTime, showGameResults]);
 
   const analysis = useMemo(() => {
     if (!inputText.trim()) return null;
-    return analyzeSentiment(inputText);
+    const result = analyzeSentiment(inputText);
+    
+    // Update analytics when analysis changes
+    if (result && inputText.trim().length > 5) {
+      setTotalAnalyses(prev => prev + 1);
+    }
+    
+    return result;
   }, [inputText]);
 
   const getSentimentColor = (sentiment) => {
@@ -322,6 +347,33 @@ const Index = () => {
         {/* Playground Section */}
         {currentSection === 'playground' && (
           <div className="space-y-6">
+            {/* User Progress */}
+            {totalAnalyses > 0 && (
+              <Card className="hover-lift shadow-lg border-2 border-blue-200 bg-blue-50">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center">
+                    <div className="text-center">
+                      <div className="text-2xl font-fredoka text-blue-600">{totalAnalyses}</div>
+                      <div className="text-xs font-inter">Analyses</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-fredoka text-green-600">{userScore}</div>
+                      <div className="text-xs font-inter">Score</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-fredoka text-purple-600">{streakCount}</div>
+                      <div className="text-xs font-inter">Streak</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl">
+                        {totalAnalyses >= 50 ? '🏆' : totalAnalyses >= 20 ? '🎆' : totalAnalyses >= 10 ? '⭐' : '🌱'}
+                      </div>
+                      <div className="text-xs font-inter">Level</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <Card className="hover-lift shadow-lg border-2 border-primary/20">
               <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
                 <CardTitle className="font-fredoka text-2xl text-center">
@@ -472,6 +524,9 @@ const Index = () => {
                       setGameAnswers({});
                       setShowGameResults(false);
                       setDropResult(null);
+                      setGameScore(0);
+                      setGameTimer(0);
+                      setGameStartTime(Date.now());
                     }}
                     variant={currentGameType === 'guess' ? "default" : "outline"}
                     className={`font-fredoka ${
@@ -489,6 +544,9 @@ const Index = () => {
                       setGameAnswers({});
                       setShowGameResults(false);
                       setDropResult(null);
+                      setGameScore(0);
+                      setGameTimer(0);
+                      setGameStartTime(Date.now());
                     }}
                     variant={currentGameType === 'fix' ? "default" : "outline"}
                     className={`font-fredoka ${
@@ -501,6 +559,26 @@ const Index = () => {
                   </Button>
                 </div>
 
+                {/* Game Status Bar */}
+                {gameStartTime && !showGameResults && (
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-2 border-blue-200">
+                    <div className="flex justify-between items-center">
+                      <div className="text-center">
+                        <div className="text-lg font-fredoka text-blue-600">⏱️ {gameTimer}s</div>
+                        <div className="text-xs font-inter">Time</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-fredoka text-green-600">🏆 {gameScore}</div>
+                        <div className="text-xs font-inter">Score</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-fredoka text-purple-600">📊 {currentGameQuestion + 1}/{currentGameType === 'guess' ? guessEmotionSentences.length : fixSentencePrompts.length}</div>
+                        <div className="text-xs font-inter">Progress</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Guess the Emotion Game */}
                 {currentGameType === 'guess' && (
                   <div className="space-y-6">
@@ -530,6 +608,13 @@ const Index = () => {
                               const emoji = e.dataTransfer.getData('text/plain');
                               const correct = emoji === guessEmotionSentences[currentGameQuestion]?.correct;
                               setDropResult({ correct, emoji });
+                              
+                              // Update score
+                              if (correct) {
+                                const timeBonus = Math.max(0, 10 - Math.floor(gameTimer / 5));
+                                setGameScore(prev => prev + 10 + timeBonus);
+                              }
+                              
                               setTimeout(() => {
                                 if (currentGameQuestion < guessEmotionSentences.length - 1) {
                                   setCurrentGameQuestion(prev => prev + 1);
@@ -573,15 +658,32 @@ const Index = () => {
                     {showGameResults && (
                       <Card className="bg-positive-bg border-positive/30">
                         <CardContent className="p-4 text-center">
-                          <div className="text-4xl mb-2">🏆</div>
+                          <div className="text-4xl mb-2">
+                            {gameScore >= 80 ? '🏆' : gameScore >= 60 ? '🎆' : gameScore >= 40 ? '⭐' : '🎉'}
+                          </div>
                           <p className="font-fredoka text-xl text-positive">
-                            Amazing! You completed the Guess the Emotion game!
+                            {gameScore >= 80 ? 'Perfect! You\'re an emotion expert!' : 
+                             gameScore >= 60 ? 'Great job! You\'re getting good at this!' :
+                             gameScore >= 40 ? 'Good work! Keep practicing!' :
+                             'Nice try! Practice makes perfect!'}
                           </p>
+                          <div className="mt-4 space-y-2">
+                            <p className="font-inter text-lg">Final Score: <strong>{gameScore} points</strong></p>
+                            <p className="font-inter text-sm">Time: {gameTimer} seconds</p>
+                            <p className="font-inter text-sm">
+                              {gameScore >= 80 ? 'Lightning fast!' :
+                               gameTimer <= 30 ? 'Quick thinking!' :
+                               gameTimer <= 60 ? 'Good pace!' : 'Take your time!'}
+                            </p>
+                          </div>
                           <Button
                             onClick={() => {
                               setCurrentGameQuestion(0);
                               setShowGameResults(false);
                               setDropResult(null);
+                              setGameScore(0);
+                              setGameTimer(0);
+                              setGameStartTime(Date.now());
                             }}
                             className="mt-4 font-fredoka bg-positive hover:bg-positive-light text-white"
                           >
@@ -620,6 +722,13 @@ const Index = () => {
                                   key={index}
                                   onClick={() => {
                                     setGameAnswers({...gameAnswers, [currentGameQuestion]: index.toString()});
+                                    
+                                    // Update score
+                                    if (index === fixSentencePrompts[currentGameQuestion]?.correct) {
+                                      const timeBonus = Math.max(0, 15 - Math.floor(gameTimer / 3));
+                                      setGameScore(prev => prev + 15 + timeBonus);
+                                    }
+                                    
                                     setTimeout(() => {
                                       if (currentGameQuestion < fixSentencePrompts.length - 1) {
                                         setCurrentGameQuestion(prev => prev + 1);
@@ -657,20 +766,32 @@ const Index = () => {
                     {showGameResults && (
                       <Card className="bg-positive-bg border-positive/30">
                         <CardContent className="p-4 text-center">
-                          <div className="text-4xl mb-2">🌟</div>
+                          <div className="text-4xl mb-2">
+                            {gameScore >= 60 ? '🏆' : gameScore >= 40 ? '🎆' : gameScore >= 20 ? '⭐' : '🎉'}
+                          </div>
                           <p className="font-fredoka text-xl text-positive">
-                            Fantastic! You turned all the sad sentences happy!
+                            {gameScore >= 60 ? 'Outstanding! You\'re a happiness expert!' : 
+                             gameScore >= 40 ? 'Excellent! You know how to spread joy!' :
+                             gameScore >= 20 ? 'Great job! Keep spreading positivity!' :
+                             'Good effort! Practice turning frowns upside down!'}
                           </p>
-                          <p className="font-inter mt-2">
-                            Score: {Object.entries(gameAnswers).filter(([key, answer]) => 
-                              parseInt(answer) === fixSentencePrompts[parseInt(key)]?.correct
-                            ).length} / {fixSentencePrompts.length}
-                          </p>
+                          <div className="mt-4 space-y-2">
+                            <p className="font-inter text-lg">Final Score: <strong>{gameScore} points</strong></p>
+                            <p className="font-inter text-sm">
+                              Correct: {Object.entries(gameAnswers).filter(([key, answer]) => 
+                                parseInt(answer) === fixSentencePrompts[parseInt(key)]?.correct
+                              ).length} / {fixSentencePrompts.length}
+                            </p>
+                            <p className="font-inter text-sm">Time: {gameTimer} seconds</p>
+                          </div>
                           <Button
                             onClick={() => {
                               setCurrentGameQuestion(0);
                               setShowGameResults(false);
                               setGameAnswers({});
+                              setGameScore(0);
+                              setGameTimer(0);
+                              setGameStartTime(Date.now());
                             }}
                             className="mt-4 font-fredoka bg-positive hover:bg-positive-light text-white"
                           >
