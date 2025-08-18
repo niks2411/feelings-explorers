@@ -1,19 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 // Simple sentiment analysis logic
 const positiveWords = [
   'love', 'awesome', 'amazing', 'great', 'wonderful', 'fantastic', 'excellent', 'brilliant',
   'happy', 'joy', 'excited', 'fun', 'cool', 'best', 'perfect', 'beautiful', 'good', 'nice',
-  'like', 'enjoy', 'favorite', 'super', 'incredible', 'outstanding', 'fabulous', 'delightful'
+  'like', 'enjoy', 'favorite', 'super', 'incredible', 'outstanding', 'fabulous', 'delightful',
+  'smile', 'laugh', 'succeed', 'win', 'celebrate', 'proud', 'cheerful', 'sunny'
 ];
 
 const negativeWords = [
   'hate', 'terrible', 'awful', 'horrible', 'bad', 'worst', 'sad', 'angry', 'boring',
   'disgusting', 'stupid', 'annoying', 'ugly', 'scary', 'difficult', 'hard', 'disappointing',
-  'frustrating', 'mad', 'upset', 'mean', 'cruel', 'yuck', 'gross', 'nasty', 'evil'
+  'frustrating', 'mad', 'upset', 'mean', 'cruel', 'yuck', 'gross', 'nasty', 'evil',
+  'cry', 'fail', 'lose', 'broken', 'hurt', 'sick', 'tired', 'worried'
 ];
 
 const analyzeSentiment = (text: string) => {
@@ -87,12 +90,47 @@ const quizQuestions = [
   }
 ];
 
+// Mini-game data
+const guessEmotionSentences = [
+  { text: "I can't wait for my birthday party!", correct: "😀", options: ["😀", "😡", "😐"] },
+  { text: "I lost my favorite toy and I'm crying.", correct: "😢", options: ["😀", "😢", "😐"] },
+  { text: "The grass is green in summer.", correct: "😐", options: ["😀", "😡", "😐"] },
+  { text: "This ice cream tastes amazing!", correct: "😀", options: ["😀", "😡", "😐"] },
+  { text: "I hate when people are mean to me.", correct: "😡", options: ["😀", "😡", "😐"] }
+];
+
+const fixSentencePrompts = [
+  {
+    sad: "I hate rainy days.",
+    happyOptions: ["I love rainy days!", "I enjoy rainy days.", "Rainy days are cozy!"],
+    correct: 0
+  },
+  {
+    sad: "This food is terrible.",
+    happyOptions: ["This food is delicious!", "This food is amazing!", "This food is okay."],
+    correct: 0
+  },
+  {
+    sad: "School is so boring.",
+    happyOptions: ["School is exciting!", "School is fun!", "School is alright."],
+    correct: 0
+  }
+];
+
 const Index = () => {
   const [inputText, setInputText] = useState('');
   const [showWordHighlight, setShowWordHighlight] = useState(false);
-  const [currentSection, setCurrentSection] = useState<'playground' | 'examples' | 'learn' | 'quiz'>('playground');
+  const [currentSection, setCurrentSection] = useState<'playground' | 'examples' | 'learn' | 'quiz' | 'games'>('playground');
   const [quizAnswers, setQuizAnswers] = useState<{[key: number]: string}>({});
   const [showQuizResults, setShowQuizResults] = useState(false);
+  
+  // Mini-games state
+  const [currentGameType, setCurrentGameType] = useState<'guess' | 'fix'>('guess');
+  const [currentGameQuestion, setCurrentGameQuestion] = useState(0);
+  const [gameAnswers, setGameAnswers] = useState<{[key: number]: string}>({});
+  const [showGameResults, setShowGameResults] = useState(false);
+  const [draggedEmoji, setDraggedEmoji] = useState<string | null>(null);
+  const [dropResult, setDropResult] = useState<{correct: boolean, emoji: string} | null>(null);
 
   const analysis = useMemo(() => {
     if (!inputText.trim()) return null;
@@ -147,6 +185,7 @@ const Index = () => {
             {[
               { id: 'playground', label: '🎮 Playground', emoji: '🎮' },
               { id: 'examples', label: '💡 Examples', emoji: '💡' },
+              { id: 'games', label: '🎯 Mini-Games', emoji: '🎯' },
               { id: 'learn', label: '📚 Learn', emoji: '📚' },
               { id: 'quiz', label: '🧩 Quiz', emoji: '🧩' }
             ].map(section => (
@@ -275,6 +314,239 @@ const Index = () => {
                     </Button>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Mini-Games Section */}
+        {currentSection === 'games' && (
+          <div className="space-y-6">
+            <Card className="hover-lift shadow-lg border-2 border-accent/20">
+              <CardHeader className="bg-gradient-to-r from-accent/10 to-secondary/10">
+                <CardTitle className="font-fredoka text-2xl text-center">
+                  🎯 Emotion Mini-Games
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {/* Game Type Selector */}
+                <div className="flex justify-center gap-4 mb-6">
+                  <Button
+                    onClick={() => {
+                      setCurrentGameType('guess');
+                      setCurrentGameQuestion(0);
+                      setGameAnswers({});
+                      setShowGameResults(false);
+                      setDropResult(null);
+                    }}
+                    variant={currentGameType === 'guess' ? "default" : "outline"}
+                    className={`font-fredoka ${
+                      currentGameType === 'guess' 
+                        ? 'bg-gradient-to-r from-accent to-primary text-white' 
+                        : 'border-2 hover:border-accent'
+                    }`}
+                  >
+                    🎲 Guess the Emotion
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setCurrentGameType('fix');
+                      setCurrentGameQuestion(0);
+                      setGameAnswers({});
+                      setShowGameResults(false);
+                      setDropResult(null);
+                    }}
+                    variant={currentGameType === 'fix' ? "default" : "outline"}
+                    className={`font-fredoka ${
+                      currentGameType === 'fix' 
+                        ? 'bg-gradient-to-r from-accent to-primary text-white' 
+                        : 'border-2 hover:border-accent'
+                    }`}
+                  >
+                    🔧 Fix the Sentence
+                  </Button>
+                </div>
+
+                {/* Guess the Emotion Game */}
+                {currentGameType === 'guess' && (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <p className="font-inter text-lg mb-4">
+                        Read the sentence and drag the right emoji to the box!
+                      </p>
+                    </div>
+
+                    <Card className="border-2 border-dashed border-primary/30">
+                      <CardContent className="p-6">
+                        <div className="text-center space-y-6">
+                          <p className="text-xl font-inter bg-muted/50 p-4 rounded-lg">
+                            "{guessEmotionSentences[currentGameQuestion]?.text}"
+                          </p>
+                          
+                          {/* Drop Zone */}
+                          <div
+                            className={`w-24 h-24 mx-auto border-4 border-dashed rounded-2xl flex items-center justify-center text-4xl transition-all duration-300 ${
+                              dropResult ? 
+                                (dropResult.correct ? 'border-positive bg-positive-bg' : 'border-negative bg-negative-bg') :
+                                'border-accent/50 bg-accent/5 hover:border-accent hover:bg-accent/10'
+                            }`}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const emoji = e.dataTransfer.getData('text/plain');
+                              const correct = emoji === guessEmotionSentences[currentGameQuestion]?.correct;
+                              setDropResult({ correct, emoji });
+                              setTimeout(() => {
+                                if (currentGameQuestion < guessEmotionSentences.length - 1) {
+                                  setCurrentGameQuestion(prev => prev + 1);
+                                  setDropResult(null);
+                                } else {
+                                  setShowGameResults(true);
+                                }
+                              }, 1500);
+                            }}
+                          >
+                            {dropResult ? dropResult.emoji : '📦'}
+                          </div>
+
+                          {dropResult && (
+                            <div className={`font-fredoka text-lg ${dropResult.correct ? 'text-positive' : 'text-negative'}`}>
+                              {dropResult.correct ? '🎉 Perfect! Great job!' : '💪 Try again! The answer was ' + guessEmotionSentences[currentGameQuestion]?.correct}
+                            </div>
+                          )}
+
+                          {/* Draggable Emojis */}
+                          <div className="flex justify-center gap-4">
+                            {guessEmotionSentences[currentGameQuestion]?.options.map((emoji, index) => (
+                              <div
+                                key={index}
+                                draggable
+                                onDragStart={(e) => e.dataTransfer.setData('text/plain', emoji)}
+                                className="w-16 h-16 bg-white border-2 border-accent/30 rounded-xl flex items-center justify-center text-3xl cursor-grab hover:border-accent hover:scale-110 transition-all duration-200 hover-lift"
+                              >
+                                {emoji}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="text-sm font-inter text-muted-foreground">
+                            Question {currentGameQuestion + 1} of {guessEmotionSentences.length}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {showGameResults && (
+                      <Card className="bg-positive-bg border-positive/30">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-4xl mb-2">🏆</div>
+                          <p className="font-fredoka text-xl text-positive">
+                            Amazing! You completed the Guess the Emotion game!
+                          </p>
+                          <Button
+                            onClick={() => {
+                              setCurrentGameQuestion(0);
+                              setShowGameResults(false);
+                              setDropResult(null);
+                            }}
+                            className="mt-4 font-fredoka bg-positive hover:bg-positive-light text-white"
+                          >
+                            🔄 Play Again
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* Fix the Sentence Game */}
+                {currentGameType === 'fix' && (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <p className="font-inter text-lg mb-4">
+                        Turn the sad sentence into a happy one!
+                      </p>
+                    </div>
+
+                    <Card className="border-2 border-dashed border-secondary/30">
+                      <CardContent className="p-6">
+                        <div className="space-y-6">
+                          <div className="text-center">
+                            <p className="text-lg font-inter mb-2">😢 Sad Sentence:</p>
+                            <p className="text-xl font-fredoka bg-negative-bg p-4 rounded-lg text-negative">
+                              "{fixSentencePrompts[currentGameQuestion]?.sad}"
+                            </p>
+                          </div>
+
+                          <div className="text-center">
+                            <p className="text-lg font-inter mb-4">😀 Pick the happy version:</p>
+                            <div className="space-y-3">
+                              {fixSentencePrompts[currentGameQuestion]?.happyOptions.map((option, index) => (
+                                <Button
+                                  key={index}
+                                  onClick={() => {
+                                    setGameAnswers({...gameAnswers, [currentGameQuestion]: index.toString()});
+                                    setTimeout(() => {
+                                      if (currentGameQuestion < fixSentencePrompts.length - 1) {
+                                        setCurrentGameQuestion(prev => prev + 1);
+                                      } else {
+                                        setShowGameResults(true);
+                                      }
+                                    }, 1000);
+                                  }}
+                                  variant="outline"
+                                  className={`w-full p-4 font-inter hover-lift border-2 ${
+                                    gameAnswers[currentGameQuestion] === index.toString()
+                                      ? (index === fixSentencePrompts[currentGameQuestion]?.correct ? 'border-positive bg-positive-bg text-positive' : 'border-negative bg-negative-bg text-negative')
+                                      : 'hover:border-positive'
+                                  }`}
+                                  disabled={gameAnswers[currentGameQuestion] !== undefined}
+                                >
+                                  {option}
+                                  {gameAnswers[currentGameQuestion] === index.toString() && (
+                                    <span className="ml-2">
+                                      {index === fixSentencePrompts[currentGameQuestion]?.correct ? '✅' : '❌'}
+                                    </span>
+                                  )}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="text-center text-sm font-inter text-muted-foreground">
+                            Question {currentGameQuestion + 1} of {fixSentencePrompts.length}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {showGameResults && (
+                      <Card className="bg-positive-bg border-positive/30">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-4xl mb-2">🌟</div>
+                          <p className="font-fredoka text-xl text-positive">
+                            Fantastic! You turned all the sad sentences happy!
+                          </p>
+                          <p className="font-inter mt-2">
+                            Score: {Object.entries(gameAnswers).filter(([key, answer]) => 
+                              parseInt(answer) === fixSentencePrompts[parseInt(key)]?.correct
+                            ).length} / {fixSentencePrompts.length}
+                          </p>
+                          <Button
+                            onClick={() => {
+                              setCurrentGameQuestion(0);
+                              setShowGameResults(false);
+                              setGameAnswers({});
+                            }}
+                            className="mt-4 font-fredoka bg-positive hover:bg-positive-light text-white"
+                          >
+                            🔄 Play Again
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
