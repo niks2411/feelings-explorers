@@ -45,14 +45,45 @@ const MoodMirror = () => {
     }
   }, [isScanning]);
 
-  // Simple sentiment analysis for AR
+  // Enhanced sentiment analysis for AR with emoji support
   const analyzeTextForAR = (text) => {
     const positiveWords = ['love', 'awesome', 'amazing', 'great', 'wonderful', 'fantastic', 'excellent', 'brilliant', 'happy', 'joy', 'excited', 'fun', 'cool', 'best', 'perfect', 'beautiful', 'good', 'nice'];
     const negativeWords = ['hate', 'terrible', 'awful', 'horrible', 'bad', 'worst', 'sad', 'angry', 'boring', 'disgusting', 'stupid', 'annoying', 'ugly', 'scary'];
     
+    // Emoji detection
+    const positiveEmojis = ['😀', '😃', '😄', '😁', '😆', '😊', '😍', '🥰', '😘', '🤗', '🤩', '😎', '🥳', '😇', '👍', '👏', '🙌', '💖', '💕', '💝', '🌟', '⭐', '✨', '🎉', '🎊', '🏆', '🥇', '🎈'];
+    const negativeEmojis = ['😢', '😭', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😰', '😨', '😱', '😡', '😠', '🤬', '😤', '💔', '💀', '👎', '😷', '🤒', '🤕', '🥴', '😵'];
+    
+    const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
+    const detectedEmojis = text.match(emojiRegex) || [];
+    
     const words = text.toLowerCase().split(/\s+/);
     const emojis = [];
     
+    // Analyze detected emojis first
+    detectedEmojis.forEach((emoji, index) => {
+      if (positiveEmojis.includes(emoji)) {
+        emojis.push({
+          emoji: '✨', // Sparkle effect for positive emojis
+          word: emoji,
+          type: 'positive',
+          id: `emoji-${index}-${emoji}`,
+          x: Math.random() * 80 + 10,
+          y: Math.random() * 80 + 10
+        });
+      } else if (negativeEmojis.includes(emoji)) {
+        emojis.push({
+          emoji: '💧', // Tear effect for negative emojis
+          word: emoji,
+          type: 'negative',
+          id: `emoji-${index}-${emoji}`,
+          x: Math.random() * 80 + 10,
+          y: Math.random() * 80 + 10
+        });
+      }
+    });
+    
+    // Analyze words
     words.forEach((word, index) => {
       const cleanWord = word.replace(/[^\w]/g, '');
       if (positiveWords.includes(cleanWord)) {
@@ -60,8 +91,8 @@ const MoodMirror = () => {
           emoji: '😃',
           word: cleanWord,
           type: 'positive',
-          id: `${index}-${cleanWord}`,
-          x: Math.random() * 80 + 10, // Random position
+          id: `word-${index}-${cleanWord}`,
+          x: Math.random() * 80 + 10,
           y: Math.random() * 80 + 10
         });
       } else if (negativeWords.includes(cleanWord)) {
@@ -69,7 +100,7 @@ const MoodMirror = () => {
           emoji: '😕',
           word: cleanWord,
           type: 'negative',
-          id: `${index}-${cleanWord}`,
+          id: `word-${index}-${cleanWord}`,
           x: Math.random() * 80 + 10,
           y: Math.random() * 80 + 10
         });
@@ -328,21 +359,26 @@ const MoodMirror = () => {
     // For now, we'll simulate realistic text detection behavior
     
     const sampleTexts = [
-      "I love this!",
-      "This is amazing!",
-      "Great work!",
-      "I hate waiting",
-      "This is boring",
-      "Fantastic day!",
-      "I'm so happy",
-      "Not feeling good",
-      "Beautiful morning",
-      "Terrible weather",
-      "Awesome job!",
-      "I don't like this",
-      "Perfect timing",
-      "Really excited",
-      "Very disappointed"
+      "I love this! 😍",
+      "This is amazing! ✨",
+      "Great work! 👍",
+      "I hate waiting 😤",
+      "This is boring 😴",
+      "Fantastic day! 🌟",
+      "I'm so happy 😊",
+      "Not feeling good 😔",
+      "Beautiful morning 🌅",
+      "Terrible weather 🌧️",
+      "Awesome job! 🏆",
+      "I don't like this 👎",
+      "Perfect timing ⏰",
+      "Really excited 🎉",
+      "Very disappointed 😞",
+      "Best day ever! 🎆",
+      "Feeling sad today 😢",
+      "Super excited! 🚀",
+      "Not happy at all 😠",
+      "Love you so much! 💖"
     ];
     
     // Simulate detection probability based on "image complexity"
@@ -403,7 +439,7 @@ const MoodMirror = () => {
         <CardContent className="p-6">
           <div className="text-center space-y-4">
             <p className="font-inter text-lg">
-              Point your camera at text to see emoji reactions in real-time!
+              Point your camera at text and emojis to see magical reactions in real-time! 📱✨
             </p>
             
             {!cameraSupported && (
@@ -591,7 +627,7 @@ const MoodMirror = () => {
               
               <div className="text-center mt-4 space-y-2">
                 <p className="font-inter text-sm text-muted-foreground">
-                  Point camera at text and tap "Simulate Text Detection" to see AR emojis!
+                  Point camera at text with emojis and use detection buttons to see magical AR reactions! 📸✨
                 </p>
                 
                 <div className="space-y-2">
@@ -602,7 +638,7 @@ const MoodMirror = () => {
                     🔍 "Auto Detection" continuously scans for text, "Scan Now" takes a single snapshot
                   </p>
                   <p className="font-inter text-xs text-purple-600 bg-purple-50 p-2 rounded">
-                    📝 Point camera at books, signs, or handwritten text for best results
+                    📝 Point camera at books, signs, screens with emojis, or handwritten text for best results
                   </p>
                 </div>
                 

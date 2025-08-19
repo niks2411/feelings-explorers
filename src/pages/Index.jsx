@@ -6,13 +6,33 @@ import { Input } from '@/components/ui/input';
 import MoodMirror from '@/components/MoodMirror';
 import VoiceDetective from '@/components/VoiceDetective';
 
-// Enhanced sentiment analysis logic
+// Enhanced sentiment analysis logic with emoji support
 const positiveWords = [
   'love', 'awesome', 'amazing', 'great', 'wonderful', 'fantastic', 'excellent', 'brilliant',
   'happy', 'joy', 'excited', 'fun', 'cool', 'best', 'perfect', 'beautiful', 'good', 'nice',
   'like', 'enjoy', 'favorite', 'super', 'incredible', 'outstanding', 'fabulous', 'delightful',
   'smile', 'laugh', 'succeed', 'win', 'celebrate', 'proud', 'cheerful', 'sunny', 'pleased',
   'thrilled', 'elated', 'content', 'satisfied', 'grateful', 'blessed', 'lucky', 'fortunate'
+];
+
+// Positive emojis
+const positiveEmojis = [
+  '😀', '😃', '😄', '😁', '😆', '😊', '😍', '🥰', '😘', '🤗', '🤩', '😎', '🥳', '😇',
+  '👍', '👏', '🙌', '💖', '💕', '💝', '🌟', '⭐', '✨', '🎉', '🎊', '🏆', '🥇', '🎈',
+  '🌈', '🌞', '🔥', '💯', '✅', '💪', '🚀', '🎯', '💎', '🌺', '🌸', '🌻', '🦋', '🐝'
+];
+
+// Negative emojis
+const negativeEmojis = [
+  '😢', '😭', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😰',
+  '😨', '😱', '😡', '😠', '🤬', '😤', '💔', '💀', '👎', '😷', '🤒', '🤕', '🥴', '😵',
+  '🌧️', '⛈️', '🌪️', '💥', '💢', '🔴', '❌', '⛔', '🚫', '⚠️', '🆘', '🥀', '🍂', '🌑'
+];
+
+// Neutral emojis
+const neutralEmojis = [
+  '😐', '😑', '🙂', '😶', '🤔', '🤨', '🧐', '😯', '😮', '🤐', '🤷', '🤷‍♂️', '🤷‍♀️',
+  '📝', '📊', '📈', '📉', '🔍', '🔎', '💭', '💬', '📱', '💻', '📚', '📖', '🎭', '🎨'
 ];
 
 const negativeWords = [
@@ -50,6 +70,10 @@ const intensifiers = {
 };
 
 const analyzeSentiment = (text) => {
+  // First, detect emojis in the text
+  const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
+  const detectedEmojis = text.match(emojiRegex) || [];
+  
   const words = text.toLowerCase().split(/\s+/);
   let positiveScore = 0;
   let negativeScore = 0;
@@ -57,6 +81,21 @@ const analyzeSentiment = (text) => {
   let negativeCount = 0;
   
   const highlightedWords = [];
+  
+  // Analyze emojis first
+  detectedEmojis.forEach((emoji, index) => {
+    if (positiveEmojis.includes(emoji)) {
+      positiveScore += 2; // Emojis have stronger sentiment weight
+      positiveCount++;
+      highlightedWords.push({word: emoji, type: 'positive', reason: 'positive emoji'});
+    } else if (negativeEmojis.includes(emoji)) {
+      negativeScore += 2;
+      negativeCount++;
+      highlightedWords.push({word: emoji, type: 'negative', reason: 'negative emoji'});
+    } else if (neutralEmojis.includes(emoji)) {
+      highlightedWords.push({word: emoji, type: 'neutral', reason: 'neutral emoji'});
+    }
+  });
   
   // Process each word with context
   for (let i = 0; i < words.length; i++) {
@@ -155,60 +194,60 @@ const analyzeSentiment = (text) => {
 };
 
 const examples = [
-  "I love playing video games!",
-  "I hate doing homework.",
-  "The weather is okay today.",
-  "This pizza is absolutely amazing!",
-  "That movie was terrible and boring.",
-  "I went to the store yesterday.",
-  "My best friend is awesome!",
-  "This test is really difficult.",
-  "I'm excited for summer vacation!",
-  "The book was interesting.",
-  "I am not happy today.",
-  "I don't like this at all.",
-  "This is not bad actually.",
-  "I'm not feeling great."
+  "I love playing video games! 😀",
+  "I hate doing homework. 😤",
+  "The weather is okay today. 🌤️",
+  "This pizza is absolutely amazing! 🍕✨",
+  "That movie was terrible and boring. 😴👎",
+  "I went to the store yesterday. 🏪",
+  "My best friend is awesome! 👫💕",
+  "This test is really difficult. 📝😰",
+  "I'm excited for summer vacation! ☀️🏖️",
+  "The book was interesting. 📚",
+  "I am not happy today. 😔",
+  "I don't like this at all. 👎",
+  "This is not bad actually. 🤔",
+  "I'm not feeling great. 🤒"
 ];
 
 const quizQuestions = [
   {
-    text: "I absolutely love chocolate ice cream!",
+    text: "I absolutely love chocolate ice cream! 🍦😍",
     correct: "positive"
   },
   {
-    text: "This homework is really boring and stupid.",
+    text: "This homework is really boring and stupid. 😴📚",
     correct: "negative"
   },
   {
-    text: "I walked to school this morning.",
+    text: "I walked to school this morning. 🚶‍♂️🏫",
     correct: "neutral"
   }
 ];
 
-// Mini-game data
+// Mini-game data with emojis
 const guessEmotionSentences = [
-  { text: "I can't wait for my birthday party!", correct: "😀", options: ["😀", "😡", "😐"] },
-  { text: "I lost my favorite toy and I'm crying.", correct: "😢", options: ["😀", "😢", "😐"] },
-  { text: "The grass is green in summer.", correct: "😐", options: ["😀", "😡", "😐"] },
-  { text: "This ice cream tastes amazing!", correct: "😀", options: ["😀", "😡", "😐"] },
-  { text: "I hate when people are mean to me.", correct: "😡", options: ["😀", "😡", "😐"] }
+  { text: "I can't wait for my birthday party! 🎂🎉", correct: "😀", options: ["😀", "😡", "😐"] },
+  { text: "I lost my favorite toy and I'm crying. 😭🧸", correct: "😢", options: ["😀", "😢", "😐"] },
+  { text: "The grass is green in summer. 🌱☀️", correct: "😐", options: ["😀", "😡", "😐"] },
+  { text: "This ice cream tastes amazing! 🍦✨", correct: "😀", options: ["😀", "😡", "😐"] },
+  { text: "I hate when people are mean to me. 😠💔", correct: "😡", options: ["😀", "😡", "😐"] }
 ];
 
 const fixSentencePrompts = [
   {
-    sad: "I hate rainy days.",
-    happyOptions: ["I love rainy days!", "I enjoy rainy days.", "Rainy days are cozy!"],
+    sad: "I hate rainy days. 🌧️😞",
+    happyOptions: ["I love rainy days! 🌧️💕", "I enjoy rainy days. 🌧️😊", "Rainy days are cozy! 🌧️🏠"],
     correct: 0
   },
   {
-    sad: "This food is terrible.",
-    happyOptions: ["This food is delicious!", "This food is amazing!", "This food is okay."],
+    sad: "This food is terrible. 🤢🍽️",
+    happyOptions: ["This food is delicious! 😋🍽️", "This food is amazing! 🤩🍽️", "This food is okay. 😐🍽️"],
     correct: 0
   },
   {
-    sad: "School is so boring.",
-    happyOptions: ["School is exciting!", "School is fun!", "School is alright."],
+    sad: "School is so boring. 😴🏫",
+    happyOptions: ["School is exciting! 🤩🏫", "School is fun! 😄🏫", "School is alright. 😐🏫"],
     correct: 0
   }
 ];
@@ -234,6 +273,7 @@ const Index = () => {
   const [gameScore, setGameScore] = useState(0);
   const [gameTimer, setGameTimer] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   // Game timer effect
   useEffect(() => {
@@ -275,15 +315,32 @@ const Index = () => {
     
     let result = text;
     highlightedWords.forEach(({word, type, reason, intensity}) => {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
       let className = '';
+      let regex;
       
-      if (type === 'positive') {
-        className = 'word-positive';
-      } else if (type === 'negative') {
-        className = 'word-negative';
-      } else if (type === 'negation') {
-        className = 'word-negation';
+      // Handle emojis differently from words
+      if (word.match(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu)) {
+        // It's an emoji
+        regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+        if (type === 'positive') {
+          className = 'emoji-positive';
+        } else if (type === 'negative') {
+          className = 'emoji-negative';
+        } else if (type === 'neutral') {
+          className = 'emoji-neutral';
+        }
+      } else {
+        // It's a word
+        regex = new RegExp(`\\b${word}\\b`, 'gi');
+        if (type === 'positive') {
+          className = 'word-positive';
+        } else if (type === 'negative') {
+          className = 'word-negative';
+        } else if (type === 'negation') {
+          className = 'word-negation';
+        } else if (type === 'neutral') {
+          className = 'word-neutral';
+        }
       }
       
       let title = '';
@@ -298,6 +355,25 @@ const Index = () => {
     
     return result;
   };
+  
+  // Add emoji to text
+  const addEmoji = (emoji) => {
+    setInputText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+  
+  // Quick emoji suggestions based on current sentiment
+  const getEmojiSuggestions = () => {
+    if (!analysis) return [...positiveEmojis.slice(0, 6), ...neutralEmojis.slice(0, 3), ...negativeEmojis.slice(0, 3)];
+    
+    if (analysis.sentiment.includes('positive')) {
+      return [...positiveEmojis.slice(0, 8), ...neutralEmojis.slice(0, 4)];
+    } else if (analysis.sentiment.includes('negative')) {
+      return [...negativeEmojis.slice(0, 8), ...neutralEmojis.slice(0, 4)];
+    } else {
+      return [...neutralEmojis.slice(0, 6), ...positiveEmojis.slice(0, 3), ...negativeEmojis.slice(0, 3)];
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -308,7 +384,7 @@ const Index = () => {
             🤖 Feeling Detective
           </h1>
           <p className="text-xl font-inter opacity-90">
-            Teach computers to understand emotions in sentences!
+            Teach computers to understand emotions in sentences and emojis! 😊📱
           </p>
         </div>
       </header>
@@ -319,12 +395,12 @@ const Index = () => {
           <div className="flex flex-wrap gap-2 py-4">
             {[
               { id: 'playground', label: '🎮 Playground', emoji: '🎮' },
-              { id: 'examples', label: '💡 Examples', emoji: '💡' },
               { id: 'games', label: '🎯 Mini-Games', emoji: '🎯' },
+              { id: 'quiz', label: '🧩 Quiz', emoji: '🧩' },
               { id: 'ar-mirror', label: '📱 AR Mirror', emoji: '📱' },
               { id: 'voice', label: '🎤 Voice Detective', emoji: '🎤' },
-              { id: 'learn', label: '📚 Learn', emoji: '📚' },
-              { id: 'quiz', label: '🧩 Quiz', emoji: '🧩' }
+              { id: 'examples', label: '💡 Examples', emoji: '💡' },
+              { id: 'learn', label: '📚 Learn', emoji: '📚' }
             ].map(section => (
               <Button
                 key={section.id}
@@ -377,16 +453,97 @@ const Index = () => {
             <Card className="hover-lift shadow-lg border-2 border-primary/20">
               <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
                 <CardTitle className="font-fredoka text-2xl text-center">
-                  🎮 Enhanced Sentiment Playground
+                  🎮 Enhanced Sentiment Playground with Emojis! 😊
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <Textarea
-                  placeholder="Try: 'I am not happy' or 'I love ice cream!' to see enhanced sentiment analysis!"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  className="min-h-[120px] text-lg font-inter border-2 border-muted focus:border-primary rounded-lg"
-                />
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Textarea
+                      placeholder="Try: 'I am not happy 😢' or 'try something your's' - Mix text and emojis!"
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      className="min-h-[120px] text-lg font-inter border-2 border-muted focus:border-primary rounded-lg pr-12"
+                    />
+                    <Button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="absolute top-2 right-2 p-2 h-8 w-8 bg-accent hover:bg-accent-light text-white rounded-full"
+                    >
+                      😊
+                    </Button>
+                  </div>
+                  
+                  {/* Emoji Picker */}
+                  {showEmojiPicker && (
+                    <Card className="border-2 border-accent/30 bg-accent/5">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <h4 className="font-fredoka text-sm text-accent font-medium">✨ Smart Emoji Suggestions:</h4>
+                          <div className="grid grid-cols-6 gap-2">
+                            {getEmojiSuggestions().map((emoji, index) => (
+                              <Button
+                                key={index}
+                                onClick={() => addEmoji(emoji)}
+                                variant="outline"
+                                className="h-10 w-10 p-0 text-xl hover:scale-110 transition-transform"
+                              >
+                                {emoji}
+                              </Button>
+                            ))}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <h5 className="font-fredoka text-xs text-positive font-medium">😊 Happy Emojis:</h5>
+                            <div className="grid grid-cols-8 gap-1">
+                              {positiveEmojis.slice(0, 16).map((emoji, index) => (
+                                <Button
+                                  key={index}
+                                  onClick={() => addEmoji(emoji)}
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-sm hover:bg-positive-bg"
+                                >
+                                  {emoji}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <h5 className="font-fredoka text-xs text-negative font-medium">😢 Sad Emojis:</h5>
+                            <div className="grid grid-cols-8 gap-1">
+                              {negativeEmojis.slice(0, 16).map((emoji, index) => (
+                                <Button
+                                  key={index}
+                                  onClick={() => addEmoji(emoji)}
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-sm hover:bg-negative-bg"
+                                >
+                                  {emoji}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <h5 className="font-fredoka text-xs text-neutral font-medium">😐 Neutral Emojis:</h5>
+                            <div className="grid grid-cols-8 gap-1">
+                              {neutralEmojis.slice(0, 16).map((emoji, index) => (
+                                <Button
+                                  key={index}
+                                  onClick={() => addEmoji(emoji)}
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-sm hover:bg-neutral-bg"
+                                >
+                                  {emoji}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
                 
                 {analysis && (
                   <div className="mt-6 space-y-4">
@@ -460,7 +617,8 @@ const Index = () => {
                             <p>✅ <span className="word-positive">Green words</span> = Happy/Positive</p>
                             <p>❌ <span className="word-negative">Red words</span> = Sad/Negative</p>
                             <p>🔄 <span className="word-negation">Purple words</span> = Negation (flips meaning)</p>
-                            <p>📊 Analysis: {analysis.positiveCount} positive, {analysis.negativeCount} negative words detected</p>
+                            <p>😊 <span className="emoji-positive">Highlighted emojis</span> = Detected emotions</p>
+                            <p>📊 Analysis: {analysis.positiveCount} positive, {analysis.negativeCount} negative words/emojis detected</p>
                           </div>
                         </CardContent>
                       </Card>
@@ -478,12 +636,12 @@ const Index = () => {
             <Card className="hover-lift shadow-lg border-2 border-accent/20">
               <CardHeader className="bg-gradient-to-r from-accent/10 to-primary/10">
                 <CardTitle className="font-fredoka text-2xl text-center">
-                  💡 Try These Examples
+                  💡 Try These Examples with Emojis! 😊📝
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <p className="text-center font-inter mb-6">
-                  Click on any sentence to see how the enhanced AI detects emotions and negations!
+                  Click on any sentence to see how the AI detects emotions in both text and emojis! 🤖✨
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {examples.map((example, index) => (
@@ -511,7 +669,7 @@ const Index = () => {
             <Card className="hover-lift shadow-lg border-2 border-accent/20">
               <CardHeader className="bg-gradient-to-r from-accent/10 to-secondary/10">
                 <CardTitle className="font-fredoka text-2xl text-center">
-                  🎯 Emotion Mini-Games
+                  🎯 Emotion Mini-Games with Emojis! 🎮
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
@@ -584,7 +742,7 @@ const Index = () => {
                   <div className="space-y-6">
                     <div className="text-center">
                       <p className="font-inter text-lg mb-4">
-                        Read the sentence and drag the right emoji to the box!
+                        Read the sentence with emojis and drag the right emotion to the box! 😊📝
                       </p>
                     </div>
 
@@ -662,18 +820,18 @@ const Index = () => {
                             {gameScore >= 80 ? '🏆' : gameScore >= 60 ? '🎆' : gameScore >= 40 ? '⭐' : '🎉'}
                           </div>
                           <p className="font-fredoka text-xl text-positive">
-                            {gameScore >= 80 ? 'Perfect! You\'re an emotion expert!' : 
-                             gameScore >= 60 ? 'Great job! You\'re getting good at this!' :
-                             gameScore >= 40 ? 'Good work! Keep practicing!' :
-                             'Nice try! Practice makes perfect!'}
+                            {gameScore >= 80 ? 'Perfect! You\'re an emotion expert! 🤖✨' : 
+                             gameScore >= 60 ? 'Great job! You\'re getting good at this! 😊👍' :
+                             gameScore >= 40 ? 'Good work! Keep practicing! 💪📚' :
+                             'Nice try! Practice makes perfect! 🌟'}
                           </p>
                           <div className="mt-4 space-y-2">
                             <p className="font-inter text-lg">Final Score: <strong>{gameScore} points</strong></p>
-                            <p className="font-inter text-sm">Time: {gameTimer} seconds</p>
+                            <p className="font-inter text-sm">Time: {gameTimer} seconds ⏱️</p>
                             <p className="font-inter text-sm">
-                              {gameScore >= 80 ? 'Lightning fast!' :
-                               gameTimer <= 30 ? 'Quick thinking!' :
-                               gameTimer <= 60 ? 'Good pace!' : 'Take your time!'}
+                              {gameScore >= 80 ? 'Lightning fast! ⚡' :
+                               gameTimer <= 30 ? 'Quick thinking! 🧠' :
+                               gameTimer <= 60 ? 'Good pace! 🚶‍♂️' : 'Take your time! 🐌'}
                             </p>
                           </div>
                           <Button
@@ -700,7 +858,7 @@ const Index = () => {
                   <div className="space-y-6">
                     <div className="text-center">
                       <p className="font-inter text-lg mb-4">
-                        Turn the sad sentence into a happy one!
+                        Turn the sad sentence into a happy one! Transform 😢 into 😊
                       </p>
                     </div>
 
@@ -770,19 +928,19 @@ const Index = () => {
                             {gameScore >= 60 ? '🏆' : gameScore >= 40 ? '🎆' : gameScore >= 20 ? '⭐' : '🎉'}
                           </div>
                           <p className="font-fredoka text-xl text-positive">
-                            {gameScore >= 60 ? 'Outstanding! You\'re a happiness expert!' : 
-                             gameScore >= 40 ? 'Excellent! You know how to spread joy!' :
-                             gameScore >= 20 ? 'Great job! Keep spreading positivity!' :
-                             'Good effort! Practice turning frowns upside down!'}
+                            {gameScore >= 60 ? 'Outstanding! You\'re a happiness expert! 😊🌟' : 
+                             gameScore >= 40 ? 'Excellent! You know how to spread joy! 😄💕' :
+                             gameScore >= 20 ? 'Great job! Keep spreading positivity! 🌈✨' :
+                             'Good effort! Practice turning frowns upside down! 🙃💪'}
                           </p>
                           <div className="mt-4 space-y-2">
                             <p className="font-inter text-lg">Final Score: <strong>{gameScore} points</strong></p>
                             <p className="font-inter text-sm">
                               Correct: {Object.entries(gameAnswers).filter(([key, answer]) => 
                                 parseInt(answer) === fixSentencePrompts[parseInt(key)]?.correct
-                              ).length} / {fixSentencePrompts.length}
+                              ).length} / {fixSentencePrompts.length} ✅
                             </p>
-                            <p className="font-inter text-sm">Time: {gameTimer} seconds</p>
+                            <p className="font-inter text-sm">Time: {gameTimer} seconds ⏱️</p>
                           </div>
                           <Button
                             onClick={() => {
@@ -823,13 +981,13 @@ const Index = () => {
             <Card className="hover-lift shadow-lg border-2 border-positive/20">
               <CardHeader className="bg-gradient-to-r from-positive/10 to-neutral/10">
                 <CardTitle className="font-fredoka text-2xl text-center">
-                  📚 How Does It Work?
+                  📚 How Does It Work with Emojis? 🤖😊
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 <div className="text-center">
                   <p className="text-lg font-inter leading-relaxed">
-                    Computers count <span className="word-positive">happy words</span> and <span className="word-negative">sad words</span> to guess the feeling in a sentence!
+                    Computers count <span className="word-positive">happy words</span>, <span className="word-negative">sad words</span>, and <span className="emoji-positive">emojis</span> to guess the feeling in a sentence! 🧠✨
                   </p>
                 </div>
 
@@ -837,17 +995,27 @@ const Index = () => {
                   <Card className="bg-positive-bg border-positive/30">
                     <CardHeader>
                       <CardTitle className="font-fredoka text-lg text-positive flex items-center gap-2">
-                        😀 Happy Words
+                        😀 Happy Words & Emojis
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {positiveWords.slice(0, 12).map(word => (
-                          <span key={word} className="word-positive text-sm">
-                            {word}
-                          </span>
-                        ))}
-                        <span className="text-positive font-medium">...and more!</span>
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap gap-2">
+                          {positiveWords.slice(0, 8).map(word => (
+                            <span key={word} className="word-positive text-sm">
+                              {word}
+                            </span>
+                          ))}
+                          <span className="text-positive font-medium">...and more!</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {positiveEmojis.slice(0, 12).map(emoji => (
+                            <span key={emoji} className="emoji-positive text-lg">
+                              {emoji}
+                            </span>
+                          ))}
+                          <span className="text-positive font-medium">...and more!</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -855,17 +1023,27 @@ const Index = () => {
                   <Card className="bg-negative-bg border-negative/30">
                     <CardHeader>
                       <CardTitle className="font-fredoka text-lg text-negative flex items-center gap-2">
-                        😡 Sad Words
+                        😡 Sad Words & Emojis
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {negativeWords.slice(0, 12).map(word => (
-                          <span key={word} className="word-negative text-sm">
-                            {word}
-                          </span>
-                        ))}
-                        <span className="text-negative font-medium">...and more!</span>
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap gap-2">
+                          {negativeWords.slice(0, 8).map(word => (
+                            <span key={word} className="word-negative text-sm">
+                              {word}
+                            </span>
+                          ))}
+                          <span className="text-negative font-medium">...and more!</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {negativeEmojis.slice(0, 12).map(emoji => (
+                            <span key={emoji} className="emoji-negative text-lg">
+                              {emoji}
+                            </span>
+                          ))}
+                          <span className="text-negative font-medium">...and more!</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -876,16 +1054,19 @@ const Index = () => {
                     <div className="text-center space-y-2">
                       <div className="text-2xl">🤖</div>
                       <p className="font-fredoka text-lg">
-                        <strong>Enhanced Rules:</strong>
+                        <strong>Enhanced Rules with Emojis:</strong>
                       </p>
                       <p className="font-fredoka text-lg">
-                        More happy words = Positive 😀
+                        More happy words + 😊 emojis = Positive 😀
                       </p>
                       <p className="font-fredoka text-lg">
-                        More sad words = Negative 😡
+                        More sad words + 😢 emojis = Negative 😡
                       </p>
                       <p className="font-fredoka text-lg">
-                        <span className="word-negation">NOT</span> flips the meaning!
+                        <span className="word-negation">NOT</span> flips the meaning! 🔄
+                      </p>
+                      <p className="font-fredoka text-lg">
+                        Emojis are <strong>extra powerful</strong> clues! 💪✨
                       </p>
                     </div>
                   </CardContent>
@@ -901,12 +1082,12 @@ const Index = () => {
             <Card className="hover-lift shadow-lg border-2 border-secondary/20">
               <CardHeader className="bg-gradient-to-r from-secondary/10 to-accent/10">
                 <CardTitle className="font-fredoka text-2xl text-center">
-                  🧩 Feeling Quiz
+                  🧩 Feeling Quiz with Emojis! 📝😊
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <p className="text-center font-inter mb-6">
-                  Can you guess the feeling in these sentences?
+                  Can you guess the feeling in these sentences with emojis? 🤔💭
                 </p>
                 
                 <div className="space-y-6">
@@ -939,10 +1120,10 @@ const Index = () => {
                         {showQuizResults && (
                           <div className="mt-3">
                             {quizAnswers[index] === question.correct ? (
-                              <p className="text-positive font-fredoka">✅ Correct! Great job!</p>
+                              <p className="text-positive font-fredoka">✅ Correct! Great job! 🎉</p>
                             ) : (
                               <p className="text-negative font-fredoka">
-                                ❌ Not quite. The answer is {question.correct}!
+                                ❌ Not quite. The answer is {question.correct}! 💪
                               </p>
                             )}
                           </div>
@@ -965,7 +1146,8 @@ const Index = () => {
                 {showQuizResults && (
                   <div className="text-center mt-4">
                     <p className="font-fredoka text-lg">
-                      Your Score: {quizQuestions.filter((q, i) => quizAnswers[i] === q.correct).length} / {quizQuestions.length}
+                      Your Score: {quizQuestions.filter((q, i) => quizAnswers[i] === q.correct).length} / {quizQuestions.length} 
+                      {quizQuestions.filter((q, i) => quizAnswers[i] === q.correct).length === quizQuestions.length ? ' 🏆' : ' 📊'}
                     </p>
                   </div>
                 )}
@@ -978,9 +1160,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-muted py-8 px-4 mt-12">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="text-4xl mb-2">🤖💭</div>
+          <div className="text-4xl mb-2">🤖💭😊</div>
           <p className="font-inter text-muted-foreground">
-            Now with enhanced negation detection! Try "I am not happy" to see it in action.
+            Now with enhanced emoji detection! Try "I am not happy 😢" or "I love this! 😍" to see it in action.
           </p>
         </div>
       </footer>
