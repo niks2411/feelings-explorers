@@ -417,8 +417,8 @@ const Index = () => {
               { id: 'playground', label: '🎮 Playground', emoji: '🎮' },
               { id: 'games', label: '🎯 Mini-Games', emoji: '🎯' },
               { id: 'quiz', label: '🧩 Quiz', emoji: '🧩' },
-              { id: 'ar-mirror', label: '📱 AR Mirror', emoji: '📱' },
               { id: 'voice', label: '🎤 Voice Detective', emoji: '🎤' },
+              { id: 'ar-mirror', label: '📱 AR Mirror', emoji: '📱' },
               { id: 'examples', label: '💡 Examples', emoji: '💡' },
               { id: 'learn', label: '📚 Learn', emoji: '📚' }
             ].map(section => (
