@@ -430,36 +430,44 @@ const MoodMirror = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="hover-lift shadow-lg border-2 border-accent/20">
-        <CardHeader className="bg-gradient-to-r from-accent/10 to-primary/10">
-          <CardTitle className="font-fredoka text-2xl text-center">
-            📱 Mood Mirror - AR Scanner
+      <Card className="magical-card hover-bounce shadow-glow border-0">
+        <CardHeader className="magic-gradient text-white rounded-t-lg">
+          <CardTitle className="font-fredoka text-3xl text-center flex items-center justify-center gap-3">
+            <span className="bounce-gentle">📱</span>
+            <span>Mood Mirror - AR Scanner</span>
+            <span className="sparkle">✨</span>
           </CardTitle>
+          <p className="text-center font-inter text-white/90 text-lg">
+            Point your camera at text and emojis to see magical reactions in real-time!
+          </p>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <p className="font-inter text-lg">
-              Point your camera at text and emojis to see magical reactions in real-time! 📱✨
-            </p>
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            <div className="text-lg font-inter text-muted-foreground">
+              Experience the future of emotion detection! 🚀
+            </div>
             
             {!cameraSupported && (
-              <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                Camera not supported in this browser. Try Chrome or Safari on mobile!
+              <div className="glass-effect border border-yellow-400/50 text-yellow-700 px-6 py-4 rounded-xl">
+                <div className="text-2xl mb-2">⚠️</div>
+                <div className="font-fredoka">Camera not supported in this browser. Try Chrome or Safari on mobile!</div>
               </div>
             )}
             
             {cameraSupported && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Camera Status Indicator */}
                 {cameraStatus === 'requesting' && (
-                  <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded animate-pulse">
-                    📷 Requesting camera access... Please allow permissions when prompted
+                  <div className="glass-effect border border-blue-400/50 text-blue-700 px-6 py-4 rounded-xl pulse-fun">
+                    <div className="text-3xl mb-2 bounce-gentle">📷</div>
+                    <div className="font-fredoka">Requesting camera access... Please allow permissions when prompted</div>
                   </div>
                 )}
                 
                 {cameraStatus === 'error' && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    ❌ Camera access failed. Please refresh and try again.
+                  <div className="glass-effect border border-red-400/50 text-red-700 px-6 py-4 rounded-xl">
+                    <div className="text-3xl mb-2">❌</div>
+                    <div className="font-fredoka">Camera access failed. Please refresh and try again.</div>
                   </div>
                 )}
                 
@@ -467,9 +475,10 @@ const MoodMirror = () => {
                   <Button
                     onClick={startCamera}
                     disabled={cameraStatus === 'requesting'}
-                    className="font-fredoka bg-gradient-to-r from-accent to-primary text-white hover-lift disabled:opacity-50"
+                    className="font-fredoka text-lg px-8 py-4 magic-gradient text-white hover-bounce disabled:opacity-50 shadow-glow border-0"
                   >
-                    📷 Start AR Scanner
+                    <span className="text-2xl mr-3">📷</span>
+                    Start AR Scanner
                   </Button>
                 ) : (
                   <div className="space-y-4">

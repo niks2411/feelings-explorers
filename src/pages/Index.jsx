@@ -376,23 +376,43 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Floating decorative elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-10 left-10 text-4xl opacity-20 float-magical">✨</div>
+        <div className="absolute top-20 right-20 text-3xl opacity-30 bounce-gentle">🌟</div>
+        <div className="absolute bottom-20 left-16 text-2xl opacity-25 pulse-fun">💫</div>
+        <div className="absolute bottom-32 right-32 text-3xl opacity-20 sparkle">⭐</div>
+        <div className="absolute top-1/2 left-8 text-2xl opacity-15 wiggle">🎈</div>
+        <div className="absolute top-1/3 right-12 text-2xl opacity-25 float-magical">🦋</div>
+      </div>
+
       {/* Header */}
-      <header className="bg-gradient-to-r from-primary to-accent text-white py-8 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-fredoka font-bold mb-2">
-            🤖 Feeling Detective
+      <header className="hero-section text-white py-12 px-4 relative z-10">
+        <div className="max-w-4xl mx-auto text-center relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-50 blur-xl"></div>
+          <h1 className="text-5xl md:text-7xl font-fredoka font-bold mb-4 relative z-10">
+            <span className="inline-block hover-bounce">🤖</span>{" "}
+            <span className="text-shimmer">Feeling Detective</span>
           </h1>
-          <p className="text-xl font-inter opacity-90">
-            Teach computers to understand emotions in sentences and emojis! 😊📱
+          <p className="text-xl md:text-2xl font-inter opacity-95 mb-6 relative z-10">
+            Teach computers to understand emotions in sentences and emojis! 
+            <span className="inline-block ml-2 bounce-gentle">😊📱</span>
           </p>
+          <div className="flex justify-center gap-2 text-2xl relative z-10">
+            <span className="hover-sparkle cursor-pointer">🎮</span>
+            <span className="hover-sparkle cursor-pointer">🎯</span>
+            <span className="hover-sparkle cursor-pointer">🧩</span>
+            <span className="hover-sparkle cursor-pointer">📱</span>
+            <span className="hover-sparkle cursor-pointer">🎤</span>
+          </div>
         </div>
       </header>
 
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="glass-effect border-b border-white/20 relative z-10">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="flex flex-wrap gap-2 py-4">
+          <div className="flex flex-wrap gap-3 py-6">
             {[
               { id: 'playground', label: '🎮 Playground', emoji: '🎮' },
               { id: 'games', label: '🎯 Mini-Games', emoji: '🎯' },
@@ -406,12 +426,13 @@ const Index = () => {
                 key={section.id}
                 onClick={() => setCurrentSection(section.id)}
                 variant={currentSection === section.id ? "default" : "outline"}
-                className={`font-fredoka font-medium hover-lift ${
+                className={`font-fredoka font-semibold hover-bounce transition-all duration-300 ${
                   currentSection === section.id 
-                    ? 'bg-gradient-to-r from-primary to-accent text-white' 
-                    : 'border-2 hover:border-primary'
+                    ? 'magic-gradient text-white shadow-glow border-0' 
+                    : 'border-2 border-primary/30 hover:border-primary bg-white/80 backdrop-blur-sm hover:bg-white'
                 }`}
               >
+                <span className="mr-2 text-lg">{section.emoji}</span>
                 {section.label}
               </Button>
             ))}
@@ -419,42 +440,50 @@ const Index = () => {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
         {/* Playground Section */}
         {currentSection === 'playground' && (
           <div className="space-y-6">
             {/* User Progress */}
             {totalAnalyses > 0 && (
-              <Card className="hover-lift shadow-lg border-2 border-blue-200 bg-blue-50">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="text-center">
-                      <div className="text-2xl font-fredoka text-blue-600">{totalAnalyses}</div>
-                      <div className="text-xs font-inter">Analyses</div>
+              <Card className="magical-card hover-bounce shadow-glow border-0">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <h3 className="font-fredoka text-2xl text-shimmer mb-2">Your Amazing Progress!</h3>
+                  </div>
+                  <div className="grid grid-cols-4 gap-4 text-center">
+                    <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-xl hover-sparkle">
+                      <div className="text-3xl font-fredoka text-blue-600 mb-1">{totalAnalyses}</div>
+                      <div className="text-xs font-inter text-blue-500">Analyses</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-fredoka text-green-600">{userScore}</div>
-                      <div className="text-xs font-inter">Score</div>
+                    <div className="bg-gradient-to-br from-green-100 to-green-200 p-4 rounded-xl hover-sparkle">
+                      <div className="text-3xl font-fredoka text-green-600 mb-1">{userScore}</div>
+                      <div className="text-xs font-inter text-green-500">Score</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-fredoka text-purple-600">{streakCount}</div>
-                      <div className="text-xs font-inter">Streak</div>
+                    <div className="bg-gradient-to-br from-purple-100 to-purple-200 p-4 rounded-xl hover-sparkle">
+                      <div className="text-3xl font-fredoka text-purple-600 mb-1">{streakCount}</div>
+                      <div className="text-xs font-inter text-purple-500">Streak</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl">
+                    <div className="bg-gradient-to-br from-yellow-100 to-orange-200 p-4 rounded-xl hover-sparkle">
+                      <div className="text-4xl mb-1 bounce-gentle">
                         {totalAnalyses >= 50 ? '🏆' : totalAnalyses >= 20 ? '🎆' : totalAnalyses >= 10 ? '⭐' : '🌱'}
                       </div>
-                      <div className="text-xs font-inter">Level</div>
+                      <div className="text-xs font-inter text-orange-500">Level</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
-            <Card className="hover-lift shadow-lg border-2 border-primary/20">
-              <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
-                <CardTitle className="font-fredoka text-2xl text-center">
-                  🎮 Enhanced Sentiment Playground with Emojis! 😊
+            <Card className="magical-card hover-bounce shadow-glow border-0">
+              <CardHeader className="magic-gradient text-white rounded-t-lg">
+                <CardTitle className="font-fredoka text-3xl text-center flex items-center justify-center gap-3">
+                  <span className="bounce-gentle">🎮</span>
+                  <span>Enhanced Sentiment Playground</span>
+                  <span className="sparkle">😊</span>
                 </CardTitle>
+                <p className="text-center font-inter text-white/90 text-lg">
+                  Type or speak your feelings and watch the magic happen!
+                </p>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">

@@ -234,38 +234,47 @@ const VoiceDetective = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="hover-lift shadow-lg border-2 border-primary/20">
-        <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
-          <CardTitle className="font-fredoka text-2xl text-center">
-            🎤 Voice Detective
+      <Card className="magical-card hover-bounce shadow-glow border-0">
+        <CardHeader className="magic-gradient text-white rounded-t-lg">
+          <CardTitle className="font-fredoka text-3xl text-center flex items-center justify-center gap-3">
+            <span className="bounce-gentle">🎤</span>
+            <span>Voice Detective</span>
+            <span className="sparkle">🔊</span>
           </CardTitle>
+          <p className="text-center font-inter text-white/90 text-lg">
+            Speak your feelings and watch the AI detect emotions in real-time!
+          </p>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <p className="font-inter text-lg">
-              Speak your feelings and watch the AI detect emotions in real-time!
-            </p>
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            <div className="text-lg font-inter text-muted-foreground">
+              Your voice carries emotions - let's discover them together! 🌟
+            </div>
             
             {!voiceSupported && (
-              <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                Speech recognition not supported in this browser. Try Chrome or Safari!
+              <div className="glass-effect border border-yellow-400/50 text-yellow-700 px-6 py-4 rounded-xl">
+                <div className="text-2xl mb-2">⚠️</div>
+                <div className="font-fredoka">Speech recognition not supported in this browser. Try Chrome or Safari!</div>
               </div>
             )}
             
             {voiceSupported && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Microphone Visualization */}
                 <div className="relative">
-                  <div className={`w-24 h-24 mx-auto rounded-full border-4 flex items-center justify-center text-4xl transition-all duration-300 ${
+                  <div className={`w-32 h-32 mx-auto rounded-full border-4 flex items-center justify-center text-5xl transition-all duration-500 ${
                     isListening 
-                      ? 'border-accent bg-accent/10 animate-pulse' 
-                      : 'border-muted bg-muted/10'
+                      ? 'border-accent bg-gradient-to-br from-accent/20 to-primary/20 shadow-glow animate-pulse hover-bounce' 
+                      : 'border-muted bg-muted/10 hover-lift'
                   }`}>
                     🎤
                   </div>
                   
                   {isListening && (
-                    <div className="absolute inset-0 rounded-full border-4 border-accent animate-ping"></div>
+                    <>
+                      <div className="absolute inset-0 rounded-full border-4 border-accent animate-ping opacity-60"></div>
+                      <div className="absolute inset-2 rounded-full border-2 border-primary animate-ping opacity-40 animation-delay-300"></div>
+                    </>
                   )}
                 </div>
                 
@@ -274,17 +283,19 @@ const VoiceDetective = () => {
                   {!isListening ? (
                     <Button
                       onClick={startListening}
-                      className="font-fredoka bg-gradient-to-r from-primary to-accent text-white hover-lift"
+                      className="font-fredoka text-lg px-8 py-4 magic-gradient text-white hover-bounce shadow-glow border-0"
                     >
-                      🎤 Start Listening
+                      <span className="text-2xl mr-3">🎤</span>
+                      Start Listening
                     </Button>
                   ) : (
                     <Button
                       onClick={stopListening}
                       variant="outline"
-                      className="font-fredoka border-2 border-negative text-negative"
+                      className="font-fredoka text-lg px-8 py-4 border-2 border-red-400 text-red-600 hover:bg-red-50 hover-bounce"
                     >
-                      ⏹️ Stop Listening
+                      <span className="text-2xl mr-3">⏹️</span>
+                      Stop Listening
                     </Button>
                   )}
                   
@@ -292,40 +303,47 @@ const VoiceDetective = () => {
                     <Button
                       onClick={clearResults}
                       variant="outline"
-                      className="font-fredoka border-2"
+                      className="font-fredoka text-lg px-6 py-4 border-2 hover-lift"
                     >
-                      🗑️ Clear
+                      <span className="text-xl mr-2">🗑️</span>
+                      Clear
                     </Button>
                   )}
                 </div>
                 
                 {/* Status */}
                 {isListening && (
-                  <div className="text-accent font-fredoka animate-pulse">
-                    🎧 Listening... Speak now!
+                  <div className="text-accent font-fredoka text-xl pulse-fun">
+                    <span className="text-2xl mr-2">🎧</span>
+                    Listening... Speak now!
                   </div>
                 )}
                 
                 {isProcessing && (
-                  <div className="text-blue-600 font-fredoka animate-pulse">
-                    🧠 Processing your speech...
+                  <div className="text-blue-600 font-fredoka text-xl pulse-fun">
+                    <span className="text-2xl mr-2">🧠</span>
+                    Processing your speech...
                   </div>
                 )}
               </div>
             )}
           </div>
-          
           {/* Transcript Display */}
           {transcript && (
-            <Card className="mt-6 bg-muted/50">
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <h3 className="font-fredoka text-lg">📝 What you said:</h3>
-                  <p className="font-inter text-lg bg-white p-3 rounded-lg border">
+            <Card className="mt-8 magical-card hover-lift border-0">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <h3 className="font-fredoka text-2xl text-center flex items-center justify-center gap-2">
+                    <span className="bounce-gentle">📝</span>
+                    What you said:
+                  </h3>
+                  <p className="font-inter text-xl bg-gradient-to-br from-white to-gray-50 p-6 rounded-xl border-2 border-primary/20 shadow-inner">
+                    <span className="text-2xl mr-2">💬</span>
                     "{transcript}"
                   </p>
                   {confidence > 0 && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-center text-muted-foreground font-fredoka">
+                      <span className="text-lg mr-1">🎯</span>
                       Confidence: {Math.round(confidence * 100)}%
                     </p>
                   )}
@@ -336,55 +354,58 @@ const VoiceDetective = () => {
           
           {/* Sentiment Result */}
           {sentiment && (
-            <Card className="mt-6">
-              <CardContent className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="text-6xl animate-bounce">
+            <Card className="mt-8 magical-card hover-bounce border-0">
+              <CardContent className="p-8">
+                <div className="text-center space-y-6">
+                  <div className="text-8xl bounce-gentle">
                     {sentiment.emoji}
                   </div>
                   
-                  <div className={`text-2xl font-fredoka font-bold ${sentiment.color}`}>
+                  <div className={`text-4xl font-fredoka font-bold ${sentiment.color} text-shimmer`}>
                     {sentiment.type.toUpperCase()}!
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="bg-positive-bg p-3 rounded-lg">
-                      <div className="text-2xl font-fredoka text-positive">
+                  <div className="grid grid-cols-3 gap-6 text-center">
+                    <div className="bg-gradient-to-br from-positive-bg to-green-100 p-6 rounded-xl hover-sparkle shadow-lg">
+                      <div className="text-4xl font-fredoka text-positive mb-2">
                         {sentiment.positiveCount}
                       </div>
-                      <div className="text-sm font-inter">Happy Words</div>
+                      <div className="text-sm font-inter text-positive">Happy Words</div>
                     </div>
                     
-                    <div className="bg-neutral-bg p-3 rounded-lg">
-                      <div className="text-2xl font-fredoka text-neutral">
+                    <div className="bg-gradient-to-br from-neutral-bg to-gray-100 p-6 rounded-xl hover-sparkle shadow-lg">
+                      <div className="text-4xl font-fredoka text-neutral mb-2">
                         {sentiment.score}
                       </div>
-                      <div className="text-sm font-inter">Score</div>
+                      <div className="text-sm font-inter text-neutral">Emotion Score</div>
                     </div>
                     
-                    <div className="bg-negative-bg p-3 rounded-lg">
-                      <div className="text-2xl font-fredoka text-negative">
+                    <div className="bg-gradient-to-br from-negative-bg to-red-100 p-6 rounded-xl hover-sparkle shadow-lg">
+                      <div className="text-4xl font-fredoka text-negative mb-2">
                         {sentiment.negativeCount}
                       </div>
-                      <div className="text-sm font-inter">Sad Words</div>
+                      <div className="text-sm font-inter text-negative">Sad Words</div>
                     </div>
                   </div>
                   
                   {/* Encouraging Messages */}
-                  <div className="mt-4">
+                  <div className="mt-6 p-6 rounded-xl glass-effect">
                     {sentiment.type === 'positive' && (
-                      <p className="font-fredoka text-positive">
-                        🌟 Wow! Your words are full of happiness!
+                      <p className="font-fredoka text-positive text-xl">
+                        <span className="text-2xl mr-2">🌟</span>
+                        Wow! Your words are full of happiness and joy!
                       </p>
                     )}
                     {sentiment.type === 'negative' && (
-                      <p className="font-fredoka text-negative">
-                        💙 I hear some sadness. Want to try saying something happy?
+                      <p className="font-fredoka text-negative text-xl">
+                        <span className="text-2xl mr-2">💙</span>
+                        I hear some sadness. Want to try saying something happy?
                       </p>
                     )}
                     {sentiment.type === 'neutral' && (
-                      <p className="font-fredoka text-neutral">
-                        😊 Your words are balanced and calm!
+                      <p className="font-fredoka text-neutral text-xl">
+                        <span className="text-2xl mr-2">😊</span>
+                        Your words are perfectly balanced and calm!
                       </p>
                     )}
                   </div>
